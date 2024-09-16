@@ -1,6 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Pool;
 
@@ -9,22 +7,30 @@ public class Spawner : MonoBehaviour
     [SerializeField] private GameObject _prefab;
     [SerializeField] private int _defaultPoolSize;
     [SerializeField] private int _maxPoolSize;
-    [SerializeField] private int _spawnTime;
+    [SerializeField] private float _spawnTime;
     [SerializeField] private bool _isCreating;
-    [SerializeField] private List<GameObject> _platforms;
 
     private ObjectPool<GameObject> _pool;
-    private int _minTimeLife;
-    private int _maxTimeLife;
+
+    private float _minZPosition;
+    private float _maxZPosition;
+    private float _minXPosition;
+    private float _maxXPosition;
+    private float _yPosition;
+
     private Color _defaultColor = Color.white;
 
     private void Awake()
     {
         _defaultPoolSize = 10;
         _maxPoolSize = 100;
-        _spawnTime = 1;
-        _minTimeLife = 2;
-        _maxTimeLife = 5;
+
+        _minZPosition = 316f;
+        _maxZPosition = 319f;
+        _minXPosition = 490.5f;
+        _maxXPosition = 496f;
+        _yPosition = 10f;
+
         _isCreating = true;
 
         _pool = new ObjectPool<GameObject>(
@@ -37,14 +43,6 @@ public class Spawner : MonoBehaviour
             maxSize: _maxPoolSize);
     }
 
-    private void OnEnable()
-    {
-        foreach (var platform in _platforms)
-        {
-            platform.GetComponent<Platform>().Taked += TurnOnTimer;
-        }
-    }
-
     private void Start()
     {
         StartCoroutine(Spawn(_spawnTime));
@@ -55,7 +53,37 @@ public class Spawner : MonoBehaviour
         Destroy(cube);
     }
 
-    private IEnumerator Spawn(int time)
+    private void DiactivateCube(GameObject cube)
+    {
+        cube.GetComponent<Cube>().Lived -= DiactivateCube;
+
+        _pool.Release(cube);
+    }
+
+    private void ActionOnGet(GameObject cube)
+    {
+        cube.GetComponent<Cube>().Lived += DiactivateCube;
+
+        float newZPosition = Random.Range(_minZPosition, _maxZPosition);
+        float newXPosition = Random.Range(_minXPosition, _maxXPosition);
+
+        Vector3 position = new(newXPosition, _yPosition, newZPosition);
+
+        cube.GetComponent<Cube>().ApplyDefaultState();
+
+        cube.GetComponent<MeshRenderer>().materials[0].color = _defaultColor;
+
+        cube.transform.position = position;
+        cube.transform.rotation = Quaternion.identity;
+
+        cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
+        cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+
+        cube.SetActive(true);
+    }
+
+    private IEnumerator Spawn(float time)
     {
         var wait = new WaitForSecondsRealtime(time);
 
@@ -64,42 +92,6 @@ public class Spawner : MonoBehaviour
             yield return wait;
 
             _pool.Get();
-        }
-    }
-
-    private void ActionOnGet(GameObject cube)
-    {
-        Vector3 position = new Vector3(493, 9, 317);
-
-        cube.transform.position = position;
-        cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        cube.GetComponent<MeshRenderer>().materials[0].color = _defaultColor;
-        cube.transform.Rotate(0, 0, 0);
-        cube.GetComponent<Cube>().ApplyDefaultState();
-        cube.SetActive(true);
-    }
-
-    private void TurnOnTimer(GameObject cube)
-    {
-        StartCoroutine(Live(cube));
-    }
-
-    private IEnumerator Live(GameObject cube)
-    {
-        int convertRandomMaxTimeLife = _maxTimeLife + 1;
-        int lifetime = Random.Range(_minTimeLife, convertRandomMaxTimeLife);
-
-        var wait = new WaitForSecondsRealtime(lifetime);
-        yield return wait;
-
-        _pool.Release(cube);
-    }
-
-    private void OnDisable()
-    {
-        foreach (var platform in _platforms)
-        {
-            platform.GetComponent<Platform>().Taked -= TurnOnTimer;
         }
     }
 }
