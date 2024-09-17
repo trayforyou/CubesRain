@@ -705,9 +705,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 21fd21496a5d8904d87b94fa8bad49e3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  _prefab: {fileID: 6629715422146761832, guid: f0c143c0c3a986d45a9f65be399d8c94, type: 3}
-  _defaultPoolSize: 10
-  _maxPoolSize: 100
+  _cube: {fileID: 2562983457225130841, guid: f0c143c0c3a986d45a9f65be399d8c94, type: 3}
+  _defaultPoolSize: 5
+  _maxPoolSize: 5
   _spawnTime: 0.8
   _isCreating: 1
 --- !u!1 &963194225

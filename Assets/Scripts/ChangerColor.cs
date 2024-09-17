@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(MeshRenderer))]
 public class ChangerColor : MonoBehaviour
 {
     public void ChangeRandomColor()

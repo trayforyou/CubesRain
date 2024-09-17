@@ -3,23 +3,24 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-[RequireComponent(typeof(MeshRenderer))]
-[RequireComponent(typeof(ChangerColor))]
-
+[RequireComponent(typeof(ChangerColor), typeof(MeshRenderer))]
 public class Cube : MonoBehaviour
 {
+    private ChangerColor _changerColor;
     private int _minTimeLife;
     private int _maxTimeLife;
-    private bool _isFirstTaked;
+    private bool _isTouched;
+    private Coroutine _liveCorutine;
 
     public event Action<Cube> Lived;
 
     private void Start()
     {
+        _changerColor = gameObject.GetComponent<ChangerColor>();
         _minTimeLife = 2;
         _maxTimeLife = 5;
 
-        _isFirstTaked = true;
+        _isTouched = true;
     }
 
     private void OnDisable()
@@ -29,19 +30,25 @@ public class Cube : MonoBehaviour
 
     public void ApplyDefaultState()
     {
-        _isFirstTaked = true;
+        _isTouched = true;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.TryGetComponent<Platform>(out var platform) && _isFirstTaked)
+        if (collision.gameObject.TryGetComponent<Platform>(out _) && _isTouched)
         {
-            _isFirstTaked = false;
+            _isTouched = false;
 
-            gameObject.GetComponent<ChangerColor>().ChangeRandomColor();
+            _changerColor.ChangeRandomColor();
 
-            StartCoroutine(Live(this));
+            _liveCorutine = StartCoroutine(Live(this));
         }
+    }
+
+    public void GetCubeComponents(out Rigidbody rigidbody, out MeshRenderer mewshRender)
+    {
+        rigidbody = gameObject.GetComponent<Rigidbody>();
+        mewshRender = gameObject.GetComponent<MeshRenderer>();
     }
 
     private IEnumerator Live(Cube cube)

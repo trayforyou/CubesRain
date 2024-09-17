@@ -2,6 +2,7 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Pool;
 
+[RequireComponent(typeof(Rigidbody), typeof(MeshRenderer))]
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private Cube _cube;
@@ -32,7 +33,7 @@ public class Spawner : MonoBehaviour
 
         _pool = new ObjectPool<Cube>(
             createFunc: () => Instantiate(_cube),
-            actionOnGet: (cube) => ActionOnGet(cube),
+            actionOnGet: (cube) => TurnOnObject(cube),
             actionOnRelease: (cube) => cube.gameObject.SetActive(false),
             actionOnDestroy: (cube) => DestroyCube(cube),
             collectionCheck: true,
@@ -52,30 +53,32 @@ public class Spawner : MonoBehaviour
 
     private void DiactivateCube(Cube cube)
     {
-        cube.GetComponent<Cube>().Lived -= DiactivateCube;
+        cube.Lived -= DiactivateCube;
 
         _pool.Release(cube);
     }
 
-    private void ActionOnGet(Cube cube)
+    private void TurnOnObject(Cube cube)
     {
-        cube.GetComponent<Cube>().Lived += DiactivateCube;
+        cube.GetCubeComponents(out Rigidbody rigidbody, out MeshRenderer mewshRender);
+
+        cube.Lived += DiactivateCube;
 
         float newZPosition = Random.Range(_minZPosition, _maxZPosition);
         float newXPosition = Random.Range(_minXPosition, _maxXPosition);
 
         Vector3 position = new(newXPosition, _yPosition, newZPosition);
 
-        cube.GetComponent<Cube>().ApplyDefaultState();
+        cube.ApplyDefaultState();
 
-        cube.GetComponent<MeshRenderer>().materials[0].color = _defaultColor;
+        mewshRender.materials[0].color = _defaultColor;
 
         cube.transform.position = position;
         cube.transform.rotation = Quaternion.identity;
 
-        cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
-        cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
-        cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
+        rigidbody.velocity = Vector3.zero;
+        rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
+        rigidbody.constraints = RigidbodyConstraints.None;
 
         cube.gameObject.SetActive(true);
     }
