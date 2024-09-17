@@ -4,6 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(MeshRenderer))]
+[RequireComponent(typeof(ChangerColor))]
 
 public class Cube : MonoBehaviour
 {
@@ -11,7 +12,7 @@ public class Cube : MonoBehaviour
     private int _maxTimeLife;
     private bool _isFirstTaked;
 
-    public event Action<GameObject> Lived;
+    public event Action<Cube> Lived;
 
     private void Start()
     {
@@ -19,6 +20,11 @@ public class Cube : MonoBehaviour
         _maxTimeLife = 5;
 
         _isFirstTaked = true;
+    }
+
+    private void OnDisable()
+    {
+        StopCoroutine(Live(this));
     }
 
     public void ApplyDefaultState()
@@ -32,14 +38,13 @@ public class Cube : MonoBehaviour
         {
             _isFirstTaked = false;
 
-            UnityEngine.Color newColor = UnityEngine.Random.ColorHSV();
-            gameObject.GetComponent<MeshRenderer>().materials[0].color = newColor;
+            gameObject.GetComponent<ChangerColor>().ChangeRandomColor();
 
-            StartCoroutine(Live(gameObject));
+            StartCoroutine(Live(this));
         }
     }
 
-    private IEnumerator Live(GameObject cube)
+    private IEnumerator Live(Cube cube)
     {
         int convertRandomMaxTimeLife = _maxTimeLife + 1;
         int lifetime = Random.Range(_minTimeLife, convertRandomMaxTimeLife);
@@ -49,10 +54,5 @@ public class Cube : MonoBehaviour
         yield return wait;
 
         Lived?.Invoke(cube);
-    }
-
-    private void OnDisable()
-    {
-        StopCoroutine(Live(gameObject));
     }
 }

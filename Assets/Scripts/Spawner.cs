@@ -4,13 +4,13 @@ using UnityEngine.Pool;
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private GameObject _prefab;
-    [SerializeField] private int _defaultPoolSize;
-    [SerializeField] private int _maxPoolSize;
+    [SerializeField] private Cube _cube;
+    [SerializeField] private int _defaultPoolSize = 5;
+    [SerializeField] private int _maxPoolSize = 5;
     [SerializeField] private float _spawnTime;
     [SerializeField] private bool _isCreating;
 
-    private ObjectPool<GameObject> _pool;
+    private ObjectPool<Cube> _pool;
 
     private float _minZPosition;
     private float _maxZPosition;
@@ -22,9 +22,6 @@ public class Spawner : MonoBehaviour
 
     private void Awake()
     {
-        _defaultPoolSize = 10;
-        _maxPoolSize = 100;
-
         _minZPosition = 316f;
         _maxZPosition = 319f;
         _minXPosition = 490.5f;
@@ -33,10 +30,10 @@ public class Spawner : MonoBehaviour
 
         _isCreating = true;
 
-        _pool = new ObjectPool<GameObject>(
-            createFunc: () => Instantiate(_prefab),
+        _pool = new ObjectPool<Cube>(
+            createFunc: () => Instantiate(_cube),
             actionOnGet: (cube) => ActionOnGet(cube),
-            actionOnRelease: (cube) => cube.SetActive(false),
+            actionOnRelease: (cube) => cube.gameObject.SetActive(false),
             actionOnDestroy: (cube) => DestroyCube(cube),
             collectionCheck: true,
             defaultCapacity: _defaultPoolSize,
@@ -48,19 +45,19 @@ public class Spawner : MonoBehaviour
         StartCoroutine(Spawn(_spawnTime));
     }
 
-    private void DestroyCube(GameObject cube)
+    private void DestroyCube(Cube cube)
     {
-        Destroy(cube);
+        Destroy(cube.gameObject);
     }
 
-    private void DiactivateCube(GameObject cube)
+    private void DiactivateCube(Cube cube)
     {
         cube.GetComponent<Cube>().Lived -= DiactivateCube;
 
         _pool.Release(cube);
     }
 
-    private void ActionOnGet(GameObject cube)
+    private void ActionOnGet(Cube cube)
     {
         cube.GetComponent<Cube>().Lived += DiactivateCube;
 
@@ -80,7 +77,7 @@ public class Spawner : MonoBehaviour
         cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.FreezeRotation;
         cube.GetComponent<Rigidbody>().constraints = RigidbodyConstraints.None;
 
-        cube.SetActive(true);
+        cube.gameObject.SetActive(true);
     }
 
     private IEnumerator Spawn(float time)
