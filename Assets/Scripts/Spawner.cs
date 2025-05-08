@@ -1,97 +1,54 @@
-using System.Collections;
+using System;
 using UnityEngine;
 using UnityEngine.Pool;
 
 [RequireComponent(typeof(Rigidbody), typeof(MeshRenderer))]
-public class Spawner : MonoBehaviour
+public abstract class Spawner<T> : MonoBehaviour where T : SpawnableObject
 {
-    [SerializeField] private Cube _cube;
+    [SerializeField] private T _object;
     [SerializeField] private int _defaultPoolSize = 5;
     [SerializeField] private int _maxPoolSize = 5;
-    [SerializeField] private float _spawnTime;
-    [SerializeField] private bool _isCreating;
 
-    private ObjectPool<Cube> _pool;
+    protected ObjectPool<T> _objects;
 
-    private float _minZPosition;
-    private float _maxZPosition;
-    private float _minXPosition;
-    private float _maxXPosition;
-    private float _yPosition;
+    public event Action Spawned;
+    public event Action Created;
 
-    private Color _defaultColor = Color.white;
-
-    private void Awake()
+    protected virtual void Awake()
     {
-        _minZPosition = 316f;
-        _maxZPosition = 319f;
-        _minXPosition = 490.5f;
-        _maxXPosition = 496f;
-        _yPosition = 10f;
-
-        _isCreating = true;
-
-        _pool = new ObjectPool<Cube>(
-            createFunc: () => Instantiate(_cube),
-            actionOnGet: (cube) => TurnOnObject(cube),
-            actionOnRelease: (cube) => cube.gameObject.SetActive(false),
-            actionOnDestroy: (cube) => DestroyCube(cube),
-            collectionCheck: true,
-            defaultCapacity: _defaultPoolSize,
-            maxSize: _maxPoolSize);
+        _objects = new ObjectPool<T>(
+                    createFunc: () => CreateObject(),
+                    actionOnGet: (objectInstance) => TurnOnObject(objectInstance),
+                    actionOnRelease: (objectInstance) => objectInstance.gameObject.SetActive(false),
+                    actionOnDestroy: (objectInstance) => Destroy(objectInstance.gameObject),
+                    collectionCheck: true,
+                    defaultCapacity: _defaultPoolSize,
+                    maxSize: _maxPoolSize);
     }
 
-    private void Start()
+    public int GetActiveObjectsCount() =>
+        _objects.CountActive;
+
+    protected virtual void DiactivateObject(SpawnableObject objectInstance)
     {
-        StartCoroutine(Spawn(_spawnTime));
+        objectInstance.Lived -= DiactivateObject;
+
+        _objects.Release((T)objectInstance);
     }
 
-    private void DestroyCube(Cube cube)
+    protected virtual void TurnOnObject(T objectInstance)
     {
-        Destroy(cube.gameObject);
+        Spawned?.Invoke();
+
+        objectInstance.Lived += DiactivateObject;
+
+        objectInstance.gameObject.SetActive(true);
     }
 
-    private void DiactivateCube(Cube cube)
+    private T CreateObject()
     {
-        cube.Lived -= DiactivateCube;
+        Created?.Invoke();
 
-        _pool.Release(cube);
-    }
-
-    private void TurnOnObject(Cube cube)
-    {
-        cube.GetCubeComponents(out Rigidbody rigidbody, out MeshRenderer mewshRender);
-
-        cube.Lived += DiactivateCube;
-
-        float newZPosition = Random.Range(_minZPosition, _maxZPosition);
-        float newXPosition = Random.Range(_minXPosition, _maxXPosition);
-
-        Vector3 position = new(newXPosition, _yPosition, newZPosition);
-
-        cube.ApplyDefaultState();
-
-        mewshRender.materials[0].color = _defaultColor;
-
-        cube.transform.position = position;
-        cube.transform.rotation = Quaternion.identity;
-
-        rigidbody.velocity = Vector3.zero;
-        rigidbody.constraints = RigidbodyConstraints.FreezeRotation;
-        rigidbody.constraints = RigidbodyConstraints.None;
-
-        cube.gameObject.SetActive(true);
-    }
-
-    private IEnumerator Spawn(float time)
-    {
-        var wait = new WaitForSecondsRealtime(time);
-
-        while (_isCreating)
-        {
-            yield return wait;
-
-            _pool.Get();
-        }
+        return Instantiate(_object);
     }
 }

@@ -1,0 +1,1 @@
+public class AllBombSpawnCounter : AllSpawnCounter<Bomb>{}
