@@ -7,18 +7,14 @@ public class Cube : SpawnableObject
     private ChangerColor _changerColor;
     private Coroutine _liveCorutine;
     private bool _isTouched;
-
-    private void Start()
-    {
-        _changerColor = gameObject.GetComponent<ChangerColor>();
-        _isTouched = true;
-    }
+    private MeshRenderer _meshRenderer;
 
     private void OnDisable()
     {
         if (_liveCorutine != null)
             StopCoroutine(_liveCorutine);
     }
+
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.gameObject.TryGetComponent<Platform>(out _) && _isTouched)
@@ -32,7 +28,7 @@ public class Cube : SpawnableObject
     }
 
     public MeshRenderer GetMeshRenderer() =>
-        gameObject.GetComponent<MeshRenderer>();
+        _meshRenderer;
 
     public override void ApplyDefaultState()
     {
@@ -41,7 +37,14 @@ public class Cube : SpawnableObject
         base.ApplyDefaultState();
     }
 
-    protected virtual IEnumerator Live()
+    protected override void OnAwake()
+    {
+        _isTouched = true;
+        _changerColor = GetComponent<ChangerColor>();
+        _meshRenderer = GetComponent<MeshRenderer>();
+    }
+
+    private IEnumerator Live()
     {
         var wait = new WaitForSecondsRealtime(_lifetime);
 

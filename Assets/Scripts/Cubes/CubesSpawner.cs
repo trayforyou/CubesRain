@@ -20,10 +20,8 @@ public class CubesSpawner : Spawner<Cube>
     private void Start() =>
     StartCoroutine(Spawn(_spawnTime));
 
-    protected override void Awake()
+    protected override void OnAwake()
     {
-        base.Awake();
-
         _minZPosition = 316f;
         _maxZPosition = 319f;
         _minXPosition = 490.5f;

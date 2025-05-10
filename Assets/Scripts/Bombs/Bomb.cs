@@ -8,24 +8,18 @@ public class Bomb : SpawnableObject
 
     private ChangerAlpha _changerAlpha;
 
-    protected override void Awake()
-    {
-       base.Awake();
-        
+    private void OnDisable() =>
+        _changerAlpha.BecomeInvisible -= EndExistence;
+
+    protected override void OnAwake() =>
         _changerAlpha = GetComponent<ChangerAlpha>();
-    }
 
-    protected override void OnEnable()
+    protected override void InOnEnable()
     {
-        base.OnEnable();
-
         _changerAlpha.Activate(_lifetime);
 
         _changerAlpha.BecomeInvisible += EndExistence;
     }
-
-    private void OnDisable() =>
-        _changerAlpha.BecomeInvisible -= EndExistence;
 
     protected override void EndExistence()
     {
@@ -40,9 +34,7 @@ public class Bomb : SpawnableObject
         foreach (Collider collider in colliders)
         {
             if(collider.gameObject.TryGetComponent(out Rigidbody rigidbody))
-            {
                 rigidbody.AddExplosionForce(_explosionForce, transform.position, _explosionRadius);
-            }
         }
     }
 }

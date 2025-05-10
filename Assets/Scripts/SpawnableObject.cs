@@ -6,17 +6,26 @@ public abstract class SpawnableObject : MonoBehaviour
 {
     [SerializeField] private int _minTimeLife = 1;
     [SerializeField] private int _maxTimeLife = 5;
-    
+
     protected Rigidbody _rigidbody;
     protected int _lifetime;
 
     public event Action<SpawnableObject> Lived;
 
-    protected virtual void Awake() => 
+    private void Awake()
+    {
         _rigidbody = GetComponent<Rigidbody>();
 
-    public GameObject GetGameObject() =>
-        gameObject;
+        OnAwake();
+    }
+
+    private void OnEnable()
+    {
+        int convertRandomMaxTimeLife = _maxTimeLife + 1;
+        _lifetime = UnityEngine.Random.Range(_minTimeLife, convertRandomMaxTimeLife);
+
+        InOnEnable();
+    }
 
     public virtual void ApplyDefaultState()
     {
@@ -26,12 +35,10 @@ public abstract class SpawnableObject : MonoBehaviour
         _rigidbody.constraints = RigidbodyConstraints.None;
     }
 
-    protected virtual void OnEnable()
-    {
-        int convertRandomMaxTimeLife = _maxTimeLife + 1;
-        _lifetime = UnityEngine.Random.Range(_minTimeLife, convertRandomMaxTimeLife);
-    }
+    protected virtual void OnAwake() { }
 
-    protected virtual void EndExistence() => 
-        Lived?.Invoke(this); 
+    protected virtual void InOnEnable() { }
+
+    protected virtual void EndExistence() =>
+        Lived?.Invoke(this);
 }

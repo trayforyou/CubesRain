@@ -3,9 +3,14 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 public class ChangerColor : MonoBehaviour
 {
+    private MeshRenderer _meshRenderer;
+
     public void ChangeRandomColor()
     {
+        if (_meshRenderer == null)
+            _meshRenderer = GetComponent<MeshRenderer>();
+
         Color newColor = Random.ColorHSV();
-        gameObject.GetComponent<MeshRenderer>().materials[0].color = newColor;
+        _meshRenderer.materials[0].color = newColor;
     }
 }

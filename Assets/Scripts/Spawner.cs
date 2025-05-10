@@ -14,7 +14,7 @@ public abstract class Spawner<T> : MonoBehaviour where T : SpawnableObject
     public event Action Spawned;
     public event Action Created;
 
-    protected virtual void Awake()
+    private void Awake()
     {
         _objects = new ObjectPool<T>(
                     createFunc: () => CreateObject(),
@@ -24,7 +24,11 @@ public abstract class Spawner<T> : MonoBehaviour where T : SpawnableObject
                     collectionCheck: true,
                     defaultCapacity: _defaultPoolSize,
                     maxSize: _maxPoolSize);
+
+        OnAwake();
     }
+
+    protected virtual void OnAwake(){}
 
     public int GetActiveObjectsCount() =>
         _objects.CountActive;

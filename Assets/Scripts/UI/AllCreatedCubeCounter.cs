@@ -1,1 +1,0 @@
-public class AllCreatedCubeCounter : AllCreatedCounter<Cube>{}
