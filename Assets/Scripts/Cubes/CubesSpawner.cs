@@ -5,15 +5,15 @@ using Random = UnityEngine.Random;
 
 public class CubesSpawner : Spawner<Cube>
 {
+    [SerializeField] private bool _isCreating;
+    [SerializeField] private float _spawnTime;
+
     private float _minZPosition;
     private float _maxZPosition;
     private float _minXPosition;
     private float _maxXPosition;
     private float _yPosition;
     private Color _defaultColor = Color.white;
-
-    [SerializeField] private bool _isCreating;
-    [SerializeField] private float _spawnTime;
 
     public event Action<Vector3> CubeDisabled;
 
@@ -68,7 +68,7 @@ public class CubesSpawner : Spawner<Cube>
         {
             yield return wait;
 
-            _objects.Get();
+            Objects.Get();
         }
     }
 }

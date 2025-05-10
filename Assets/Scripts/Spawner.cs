@@ -9,14 +9,14 @@ public abstract class Spawner<T> : MonoBehaviour where T : SpawnableObject
     [SerializeField] private int _defaultPoolSize = 5;
     [SerializeField] private int _maxPoolSize = 5;
 
-    protected ObjectPool<T> _objects;
+    protected ObjectPool<T> Objects;
 
     public event Action Spawned;
     public event Action Created;
 
     private void Awake()
     {
-        _objects = new ObjectPool<T>(
+        Objects = new ObjectPool<T>(
                     createFunc: () => CreateObject(),
                     actionOnGet: (objectInstance) => TurnOnObject(objectInstance),
                     actionOnRelease: (objectInstance) => objectInstance.gameObject.SetActive(false),
@@ -31,13 +31,13 @@ public abstract class Spawner<T> : MonoBehaviour where T : SpawnableObject
     protected virtual void OnAwake(){}
 
     public int GetActiveObjectsCount() =>
-        _objects.CountActive;
+        Objects.CountActive;
 
     protected virtual void DiactivateObject(SpawnableObject objectInstance)
     {
         objectInstance.Lived -= DiactivateObject;
 
-        _objects.Release((T)objectInstance);
+        Objects.Release((T)objectInstance);
     }
 
     protected virtual void TurnOnObject(T objectInstance)

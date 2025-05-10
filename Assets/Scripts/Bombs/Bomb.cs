@@ -14,9 +14,9 @@ public class Bomb : SpawnableObject
     protected override void OnAwake() =>
         _changerAlpha = GetComponent<ChangerAlpha>();
 
-    protected override void InOnEnable()
+    protected override void Enable()
     {
-        _changerAlpha.Activate(_lifetime);
+        _changerAlpha.Activate(Lifetime);
 
         _changerAlpha.BecomeInvisible += EndExistence;
     }

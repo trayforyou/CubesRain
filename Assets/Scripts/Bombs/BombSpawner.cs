@@ -12,7 +12,7 @@ public class BombSpawner : Spawner<Bomb>
 
     private void PlantBomb(Vector3 position)
     {
-        Bomb currentBomb = _objects.Get();
+        Bomb currentBomb = Objects.Get();
         currentBomb.transform.position = position;
     }
 }

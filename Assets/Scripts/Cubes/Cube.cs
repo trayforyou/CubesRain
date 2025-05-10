@@ -17,7 +17,7 @@ public class Cube : SpawnableObject
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (collision.gameObject.TryGetComponent<Platform>(out _) && _isTouched)
+        if (_isTouched && collision.gameObject.TryGetComponent<Platform>(out _))
         {
             _isTouched = false;
 
@@ -46,7 +46,7 @@ public class Cube : SpawnableObject
 
     private IEnumerator Live()
     {
-        var wait = new WaitForSecondsRealtime(_lifetime);
+        var wait = new WaitForSecondsRealtime(Lifetime);
 
         yield return wait;
 
